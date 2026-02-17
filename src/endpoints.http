@@ -1,0 +1,43 @@
+# Test endpoints for Products and Carts API
+
+### Get all products
+GET http://localhost:8080/api/products
+
+### Get a product by ID
+GET http://localhost:8080/api/products/1
+
+### Add a new product
+POST http://localhost:8080/api/products
+Content-Type: application/json
+
+{
+  "title": "cepillo2",
+  "description": "Cepillo para el cabello",
+  "code": "NP001",
+  "price": 1250,
+  "status": true,
+  "stock": 50,
+  "category": "accesorios",
+  "thumbnails": ["/images/product1.png"]
+}
+
+### Update a product by ID
+PUT http://localhost:8080/api/products/1
+Content-Type: application/json
+
+{
+  "title": "shampoo",
+  "price": 15000
+}
+
+### Delete a product by ID
+DELETE http://localhost:8080/api/products/1
+
+### Create a new cart
+POST http://localhost:8080/api/carts
+
+### Get a cart by ID
+GET http://localhost:8080/api/carts/1
+
+### Add a product to a cart
+POST http://localhost:8080/api/carts/1/product/1
