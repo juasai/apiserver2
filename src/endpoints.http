@@ -1,43 +1,143 @@
 # Test endpoints for Products and Carts API
+# Use this file with VS Code REST Client extension or similar tools
+
+@baseUrl = http://localhost:8080
+@apiUrl = {{baseUrl}}/api
+
+################################################################################
+# SERVER HEALTH
+################################################################################
+
+### Check server status
+GET {{baseUrl}}
+
+### Check API health
+GET {{apiUrl}}/health
+
+################################################################################
+# PRODUCTS
+################################################################################
 
 ### Get all products
-GET http://localhost:8080/api/products
+GET {{apiUrl}}/products
 
 ### Get a product by ID
-GET http://localhost:8080/api/products/1
+GET {{apiUrl}}/products/1
 
-### Add a new product
-POST http://localhost:8080/api/products
+### Create a new product - Example 1
+POST {{apiUrl}}/products
 Content-Type: application/json
 
 {
-  "title": "cepillo2",
-  "description": "Cepillo para el cabello",
-  "code": "NP001",
-  "price": 1250,
-  "status": true,
-  "stock": 50,
-  "category": "accesorios",
-  "thumbnails": ["/images/product1.png"]
+  "title": "Laptop HP Pavilion",
+  "description": "Laptop de alto rendimiento con procesador Intel i7",
+  "price": 1200.00,
+  "code": "LAP001",
+  "stock": 15,
+  "category": "Computadoras"
 }
 
-### Update a product by ID
-PUT http://localhost:8080/api/products/1
+### Create a new product - Example 2
+POST {{apiUrl}}/products
 Content-Type: application/json
 
 {
-  "title": "shampoo",
-  "price": 15000
+  "title": "Mouse Inalámbrico",
+  "description": "Mouse ergonómico inalámbrico",
+  "price": 25.99,
+  "code": "MOUSE001",
+  "stock": 50,
+  "category": "Accesorios"
+}
+
+### Create a new product - Example 3
+POST {{apiUrl}}/products
+Content-Type: application/json
+
+{
+  "title": "Teclado Mecánico RGB",
+  "description": "Teclado mecánico con iluminación RGB",
+  "price": 89.99,
+  "code": "KEY001",
+  "stock": 30,
+  "category": "Accesorios"
+}
+
+### Update a product - Change price and stock
+PUT {{apiUrl}}/products/1
+Content-Type: application/json
+
+{
+  "price": 1150.00,
+  "stock": 20
+}
+
+### Update a product - Change title and description
+PUT {{apiUrl}}/products/1
+Content-Type: application/json
+
+{
+  "title": "Laptop HP Pavilion 15",
+  "description": "Laptop HP Pavilion de 15 pulgadas con procesador Intel i7 de 11va generación"
 }
 
 ### Delete a product by ID
-DELETE http://localhost:8080/api/products/1
+DELETE {{apiUrl}}/products/1
 
-### Create a new cart
-POST http://localhost:8080/api/carts
+################################################################################
+# CARTS
+################################################################################
+
+### Get all carts
+GET {{apiUrl}}/carts
 
 ### Get a cart by ID
-GET http://localhost:8080/api/carts/1
+GET {{apiUrl}}/carts/1
 
-### Add a product to a cart
-POST http://localhost:8080/api/carts/1/product/1
+### Create a new cart
+POST {{apiUrl}}/carts
+
+### Add a product to a cart (adds 1 unit or increments by 1)
+POST {{apiUrl}}/carts/1/product/1
+
+### Add another product to the same cart
+POST {{apiUrl}}/carts/1/product/2
+
+### Update product quantity in cart
+PUT {{apiUrl}}/carts/1/product/1
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### Remove a product from cart
+DELETE {{apiUrl}}/carts/1/product/1
+
+### Delete entire cart
+DELETE {{apiUrl}}/carts/1
+
+################################################################################
+# ERROR TESTING
+################################################################################
+
+### Try to get non-existent product
+GET {{apiUrl}}/products/9999
+
+### Try to create product with missing fields (should fail)
+POST {{apiUrl}}/products
+Content-Type: application/json
+
+{
+  "title": "Incomplete Product",
+  "price": 50
+}
+
+### Try to add non-existent product to cart (should fail)
+POST {{apiUrl}}/carts/1/product/9999
+
+### Try to access non-existent cart (should fail)
+GET {{apiUrl}}/carts/9999
+
+### Try to access invalid route (404)
+GET {{apiUrl}}/invalid-route
