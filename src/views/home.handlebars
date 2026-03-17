@@ -1,3 +1,69 @@
+{{#if showInfo}}
+<h1>API Server - Gestor de Productos y Carritos</h1>
+
+<div class="info-section">
+    <h2>Endpoints Disponibles</h2>
+    
+    <h3>📄 Vistas Web</h3>
+    <ul>
+        <li><strong>Inicio:</strong> <a href="/">/</a></li>
+        <li><strong>Productos:</strong> <a href="/home">/home</a></li>
+        <li><strong>Productos en Tiempo Real:</strong> <a href="/realtimeproducts">/realtimeproducts</a></li>
+    </ul>
+
+    <h3>🛒 API - Productos</h3>
+    <ul>
+        <li><strong>GET /api/products</strong> - Listar todos los productos</li>
+        <li><strong>GET /api/products/:pid</strong> - Obtener producto por ID</li>
+        <li><strong>POST /api/products</strong> - Crear nuevo producto</li>
+        <li><strong>PUT /api/products/:pid</strong> - Actualizar producto</li>
+        <li><strong>DELETE /api/products/:pid</strong> - Eliminar producto</li>
+    </ul>
+
+    <h3>🛒 API - Carritos</h3>
+    <ul>
+        <li><strong>GET /api/carts</strong> - Listar todos los carritos</li>
+        <li><strong>GET /api/carts/:cid</strong> - Obtener carrito por ID</li>
+        <li><strong>POST /api/carts</strong> - Crear nuevo carrito</li>
+        <li><strong>POST /api/carts/:cid/product/:pid</strong> - Agregar producto al carrito</li>
+    </ul>
+
+    <h3>🔧 Utilitarios</h3>
+    <ul>
+        <li><strong>GET /api/health</strong> - Estado del servidor</li>
+    </ul>
+</div>
+
+<style>
+    .info-section {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .info-section h2 {
+        margin-bottom: 15px;
+        color: #333;
+    }
+    .info-section h3 {
+        margin: 20px 0 10px;
+        color: #555;
+    }
+    .info-section ul {
+        list-style: none;
+        padding-left: 10px;
+    }
+    .info-section li {
+        margin: 8px 0;
+        font-family: monospace;
+        font-size: 14px;
+    }
+    .info-section a {
+        color: #007bff;
+    }
+</style>
+
+{{else}}
 <h1>Lista de Productos</h1>
 
 {{#if products}}
@@ -29,4 +95,5 @@
     </table>
 {{else}}
     <p>No hay productos disponibles.</p>
+{{/if}}
 {{/if}}

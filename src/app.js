@@ -25,17 +25,12 @@ app.use('/', viewsRoutes);
 // API Routes
 app.use('/api', routes);
 
-// Root route
+// Root route - Home page with all endpoints
 app.get('/', (req, res) => {
-    res.json({
-        status: 'success',
-        message: 'API Server is running',
-        version: '1.0.0',
-        endpoints: {
-            health: '/api/health',
-            products: '/api/products',
-            carts: '/api/carts'
-        }
+    res.render('home', {
+        title: 'API Server - Inicio',
+        products: [],
+        showInfo: true
     });
 });
 
