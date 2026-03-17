@@ -5,6 +5,7 @@ const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const notFound = require('./middlewares/notFound');
 const routes = require('./routes');
+const viewsRoutes = require('./routes/viewsRoutes');
 
 const app = express();
 
@@ -18,7 +19,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
 
-// Routes
+// View Routes (at root)
+app.use('/', viewsRoutes);
+
+// API Routes
 app.use('/api', routes);
 
 // Root route

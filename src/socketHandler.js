@@ -3,6 +3,9 @@ const productService = require('./services/productService');
 function setupSocketHandlers(io) {
     io.on('connection', (socket) => {
         console.log('Cliente conectado:', socket.id);
+        
+        const products = productService.getAllProducts();
+        socket.emit('updateProducts', products);
 
         socket.on('addProduct', (productData) => {
             try {
