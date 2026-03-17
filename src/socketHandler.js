@@ -1,4 +1,4 @@
-const productService = require('../services/productService');
+const productService = require('./services/productService');
 
 function setupSocketHandlers(io) {
     io.on('connection', (socket) => {
@@ -22,7 +22,7 @@ function setupSocketHandlers(io) {
                     socket.emit('error', { message: 'Invalid product ID' });
                     return;
                 }
-                
+
                 const deletedProduct = productService.deleteProduct(id);
                 const products = productService.getAllProducts();
                 io.emit('updateProducts', products);
