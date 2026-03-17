@@ -1,9 +1,16 @@
 const app = require('./app');
 const config = require('./config/config');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const PORT = config.port;
 
-const server = app.listen(PORT, () => {
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.set('io', io);
+
+server.listen(PORT, () => {
     console.log(`
 ========================================
 🚀 Server is running!
@@ -33,4 +40,4 @@ process.on('SIGINT', () => {
     });
 });
 
-module.exports = server;
+module.exports = { server, io };
