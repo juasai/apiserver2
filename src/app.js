@@ -17,7 +17,17 @@ app.set('views', path.join(__dirname, 'views'));
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(logger);
+
+// Favicon routes
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/carrito-de-compras.png'));
+});
+
+app.get('/carrito-de-compras.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/carrito-de-compras.png'));
+});
 
 // View Routes (at root)
 app.use('/', viewsRoutes);
