@@ -1,0 +1,120 @@
+<h1>Productos en Tiempo Real</h1>
+
+<div class="product-form">
+    <h2>Agregar Producto</h2>
+    <form id="productForm">
+        <div class="form-group">
+            <label for="title">Título:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="description">Descripción:</label>
+            <textarea id="description" name="description" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="code">Código:</label>
+            <input type="text" id="code" name="code" required>
+        </div>
+        <div class="form-group">
+            <label for="price">Precio:</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+        </div>
+        <div class="form-group">
+            <label for="stock">Stock:</label>
+            <input type="number" id="stock" name="stock" required>
+        </div>
+        <div class="form-group">
+            <label for="category">Categoría:</label>
+            <input type="text" id="category" name="category" required>
+        </div>
+        <button type="submit">Agregar Producto</button>
+    </form>
+    <div id="message"></div>
+</div>
+
+<h2>Lista de Productos</h2>
+<table id="productsTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Código</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Categoría</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody id="productsBody">
+    </tbody>
+</table>
+
+<script>
+    const socket = io();
+
+    function renderProducts(products) {
+        const tbody = document.getElementById('productsBody');
+        if (!products || products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8">No hay productos disponibles.</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = products.map(product => `
+            <tr>
+                <td>${product.id}</td>
+                <td>${product.title}</td>
+                <td>${product.description}</td>
+                <td>${product.code}</td>
+                <td>$${product.price}</td>
+                <td>${product.stock}</td>
+                <td>${product.category}</td>
+                <td>
+                    <button class="delete" onclick="deleteProduct(${product.id})">Eliminar</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    socket.on('updateProducts', (products) => {
+        renderProducts(products);
+    });
+
+    document.getElementById('productForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const productData = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            code: document.getElementById('code').value,
+            price: parseFloat(document.getElementById('price').value),
+            stock: parseInt(document.getElementById('stock').value),
+            category: document.getElementById('category').value,
+            status: true,
+            thumbnails: []
+        };
+
+        socket.emit('addProduct', productData);
+
+        document.getElementById('productForm').reset();
+        document.getElementById('message').innerHTML = '<p class="success">Producto agregado correctamente</p>';
+        
+        setTimeout(() => {
+            document.getElementById('message').innerHTML = '';
+        }, 3000);
+    });
+
+    function deleteProduct(id) {
+        if (confirm('¿Estás seguro de eliminar este producto?')) {
+            socket.emit('deleteProduct', id);
+        }
+    }
+
+    socket.on('error', (error) => {
+        document.getElementById('message').innerHTML = `<p class="error">${error.message}</p>`;
+    });
+
+    socket.on('productAdded', (product) => {
+        console.log('Producto agregado:', product);
+    });
+</script>
