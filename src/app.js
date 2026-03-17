@@ -1,10 +1,17 @@
 const express = require('express');
+const { engine } = require('express-handlebars');
+const path = require('path');
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const notFound = require('./middlewares/notFound');
 const routes = require('./routes');
 
 const app = express();
+
+// Handlebars configuration
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
 // Middlewares
 app.use(express.json());
