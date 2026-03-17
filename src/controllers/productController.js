@@ -1,6 +1,9 @@
 const productService = require('../services/productService');
 
 class ProductController {
+    getIo(req) {
+        return req.app.get('io');
+    }
     async getAllProducts(req, res, next) {
         try {
             const products = productService.getAllProducts();
@@ -36,6 +39,13 @@ class ProductController {
     async createProduct(req, res, next) {
         try {
             const newProduct = productService.createProduct(req.body);
+            
+            const io = this.getIo(req);
+            if (io) {
+                const products = productService.getAllProducts();
+                io.emit('updateProducts', products);
+            }
+            
             res.status(201).json({
                 status: 'success',
                 data: newProduct
@@ -76,6 +86,13 @@ class ProductController {
             }
 
             const deletedProduct = productService.deleteProduct(productId);
+
+            const io = this.getIo(req);
+            if (io) {
+                const products = productService.getAllProducts();
+                io.emit('updateProducts', products);
+            }
+
             res.json({
                 status: 'success',
                 data: deletedProduct
