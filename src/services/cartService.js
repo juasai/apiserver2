@@ -1,79 +1,96 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
-const path = require('path');
-
-const cartModel = new Cart(path.join(__dirname, '../../data/carts.json'));
-const productModel = new Product(path.join(__dirname, '../../data/products.json'));
 
 class CartService {
-    getAllCarts() {
-        return cartModel.getAll();
+    async getAllCarts() {
+        return await Cart.find().lean();
     }
 
-    getCartById(id) {
-        const cart = cartModel.getById(id);
+    async getCartById(id) {
+        const cart = await Cart.findById(id).populate('products.product').lean();
         if (!cart) {
             throw new Error('Cart not found');
         }
         return cart;
     }
 
-    createCart() {
-        return cartModel.create();
+    async createCart() {
+        return await Cart.create({ products: [] });
     }
 
-    addProductToCart(cartId, productId) {
-        const cart = cartModel.getById(cartId);
+    async addProductToCart(cartId, productId) {
+        const cart = await Cart.findById(cartId);
         if (!cart) {
             throw new Error('Cart not found');
         }
 
-        const product = productModel.getById(productId);
+        const product = await Product.findById(productId);
         if (!product) {
             throw new Error('Product not found');
         }
 
-        return cartModel.addProduct(cartId, productId);
+        const productInCart = cart.products.find(p => p.product.toString() === productId);
+        if (productInCart) {
+            productInCart.quantity += 1;
+        } else {
+            cart.products.push({ product: productId, quantity: 1 });
+        }
+
+        await cart.save();
+        return cart;
     }
 
-    updateProductQuantity(cartId, productId, quantity) {
-        const cart = cartModel.getById(cartId);
+    async updateCart(cartId, products) {
+        const cart = await Cart.findById(cartId);
         if (!cart) {
             throw new Error('Cart not found');
         }
 
-        const product = productModel.getById(productId);
-        if (!product) {
-            throw new Error('Product not found');
+        cart.products = products;
+        await cart.save();
+        return cart;
+    }
+
+    async updateProductQuantity(cartId, productId, quantity) {
+        const cart = await Cart.findById(cartId);
+        if (!cart) {
+            throw new Error('Cart not found');
         }
 
         if (typeof quantity !== 'number' || quantity <= 0) {
             throw new Error('Quantity must be a positive number');
         }
 
-        const result = cartModel.updateProductQuantity(cartId, productId, quantity);
-        if (!result) {
+        const productInCart = cart.products.find(p => p.product.toString() === productId);
+        if (!productInCart) {
             throw new Error('Product not found in cart');
         }
 
-        return result;
+        productInCart.quantity = quantity;
+        await cart.save();
+        return cart;
     }
 
-    removeProductFromCart(cartId, productId) {
-        const cart = cartModel.getById(cartId);
+    async removeProductFromCart(cartId, productId) {
+        const cart = await Cart.findById(cartId);
         if (!cart) {
             throw new Error('Cart not found');
         }
 
-        return cartModel.removeProduct(cartId, productId);
+        cart.products = cart.products.filter(p => p.product.toString() !== productId);
+        await cart.save();
+        return cart;
     }
 
-    deleteCart(id) {
-        const cart = cartModel.getById(id);
+    async clearCart(cartId) {
+        const cart = await Cart.findById(cartId);
         if (!cart) {
             throw new Error('Cart not found');
         }
-        return cartModel.delete(id);
+
+        cart.products = [];
+        await cart.save();
+        return cart;
     }
 }
 

@@ -1,25 +1,42 @@
 const Product = require('../models/Product');
-const path = require('path');
-
-const productModel = new Product(path.join(__dirname, '../../data/products.json'));
 
 class ProductService {
-    getAllProducts() {
-        return productModel.getAll();
+    async getAllProducts({ limit = 10, page = 1, sort, query } = {}) {
+        const filter = {};
+
+        if (query) {
+            if (query === 'true' || query === 'false') {
+                filter.status = query === 'true';
+            } else {
+                filter.category = query;
+            }
+        }
+
+        const options = {
+            limit,
+            page,
+            lean: true
+        };
+
+        if (sort) {
+            options.sort = { price: sort === 'asc' ? 1 : -1 };
+        }
+
+        return await Product.paginate(filter, options);
     }
 
-    getProductById(id) {
-        const product = productModel.getById(id);
+    async getProductById(id) {
+        const product = await Product.findById(id);
         if (!product) {
             throw new Error('Product not found');
         }
         return product;
     }
 
-    createProduct(productData) {
+    async createProduct(productData) {
         const { title, description, price, code, stock, category } = productData;
-        
-        if (!title || !description || !price || !code || !stock || !category) {
+
+        if (!title || !description || !price || !code || !stock === undefined || !category) {
             throw new Error('All fields are required: title, description, price, code, stock, category');
         }
 
@@ -31,24 +48,22 @@ class ProductService {
             throw new Error('Stock must be a non-negative number');
         }
 
-        const products = productModel.getAll();
-        const existingProduct = products.find(p => p.code === code);
+        const existingProduct = await Product.findOne({ code });
         if (existingProduct) {
             throw new Error('Product with this code already exists');
         }
 
-        return productModel.create(productData);
+        return await Product.create(productData);
     }
 
-    updateProduct(id, updatedFields) {
-        const product = productModel.getById(id);
+    async updateProduct(id, updatedFields) {
+        const product = await Product.findById(id);
         if (!product) {
             throw new Error('Product not found');
         }
 
         if (updatedFields.code) {
-            const products = productModel.getAll();
-            const existingProduct = products.find(p => p.code === updatedFields.code && p.id !== id);
+            const existingProduct = await Product.findOne({ code: updatedFields.code, _id: { $ne: id } });
             if (existingProduct) {
                 throw new Error('Product with this code already exists');
             }
@@ -62,15 +77,15 @@ class ProductService {
             throw new Error('Stock must be a non-negative number');
         }
 
-        return productModel.update(id, updatedFields);
+        return await Product.findByIdAndUpdate(id, updatedFields, { new: true });
     }
 
-    deleteProduct(id) {
-        const product = productModel.getById(id);
+    async deleteProduct(id) {
+        const product = await Product.findById(id);
         if (!product) {
             throw new Error('Product not found');
         }
-        return productModel.delete(id);
+        return await Product.findByIdAndDelete(id);
     }
 }
 
