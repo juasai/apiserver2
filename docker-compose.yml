@@ -1,0 +1,23 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: apiserver-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build: .
+    container_name: apiserver-app
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongodb:27017/apiserver
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo-data:
