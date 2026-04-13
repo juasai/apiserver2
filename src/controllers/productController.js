@@ -4,12 +4,42 @@ class ProductController {
     getIo(req) {
         return req.app.get('io');
     }
+
     async getAllProducts(req, res, next) {
         try {
-            const products = productService.getAllProducts();
+            const { limit, page, sort, query } = req.query;
+
+            const options = {
+                limit: limit ? parseInt(limit, 10) : 10,
+                page: page ? parseInt(page, 10) : 1,
+                sort: sort || null,
+                query: query || null
+            };
+
+            const result = await productService.getAllProducts(options);
+
+            const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}`;
+            const buildLink = (p) => {
+                if (!p) return null;
+                const params = new URLSearchParams();
+                params.set('page', p);
+                if (limit) params.set('limit', limit);
+                if (sort) params.set('sort', sort);
+                if (query) params.set('query', query);
+                return `${baseUrl}?${params.toString()}`;
+            };
+
             res.json({
                 status: 'success',
-                data: products
+                payload: result.docs,
+                totalPages: result.totalPages,
+                prevPage: result.prevPage,
+                nextPage: result.nextPage,
+                page: result.page,
+                hasPrevPage: result.hasPrevPage,
+                hasNextPage: result.hasNextPage,
+                prevLink: result.hasPrevPage ? buildLink(result.prevPage) : null,
+                nextLink: result.hasNextPage ? buildLink(result.nextPage) : null
             });
         } catch (error) {
             next(error);
@@ -18,15 +48,7 @@ class ProductController {
 
     async getProductById(req, res, next) {
         try {
-            const productId = parseInt(req.params.pid, 10);
-            if (isNaN(productId)) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Invalid product ID'
-                });
-            }
-
-            const product = productService.getProductById(productId);
+            const product = await productService.getProductById(req.params.pid);
             res.json({
                 status: 'success',
                 data: product
@@ -38,14 +60,14 @@ class ProductController {
 
     async createProduct(req, res, next) {
         try {
-            const newProduct = productService.createProduct(req.body);
-            
+            const newProduct = await productService.createProduct(req.body);
+
             const io = this.getIo(req);
             if (io) {
-                const products = productService.getAllProducts();
-                io.emit('updateProducts', products);
+                const result = await productService.getAllProducts();
+                io.emit('updateProducts', result.docs);
             }
-            
+
             res.status(201).json({
                 status: 'success',
                 data: newProduct
@@ -57,15 +79,7 @@ class ProductController {
 
     async updateProduct(req, res, next) {
         try {
-            const productId = parseInt(req.params.pid, 10);
-            if (isNaN(productId)) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Invalid product ID'
-                });
-            }
-
-            const updatedProduct = productService.updateProduct(productId, req.body);
+            const updatedProduct = await productService.updateProduct(req.params.pid, req.body);
             res.json({
                 status: 'success',
                 data: updatedProduct
@@ -77,20 +91,12 @@ class ProductController {
 
     async deleteProduct(req, res, next) {
         try {
-            const productId = parseInt(req.params.pid, 10);
-            if (isNaN(productId)) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Invalid product ID'
-                });
-            }
-
-            const deletedProduct = productService.deleteProduct(productId);
+            const deletedProduct = await productService.deleteProduct(req.params.pid);
 
             const io = this.getIo(req);
             if (io) {
-                const products = productService.getAllProducts();
-                io.emit('updateProducts', products);
+                const result = await productService.getAllProducts();
+                io.emit('updateProducts', result.docs);
             }
 
             res.json({
