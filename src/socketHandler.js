@@ -1,34 +1,32 @@
 const productService = require('./services/productService');
 
 function setupSocketHandlers(io) {
-    io.on('connection', (socket) => {
+    io.on('connection', async (socket) => {
         console.log('Cliente conectado:', socket.id);
-        
-        const products = productService.getAllProducts();
-        socket.emit('updateProducts', products);
 
-        socket.on('addProduct', (productData) => {
+        try {
+            const result = await productService.getAllProducts();
+            socket.emit('updateProducts', result.docs);
+        } catch (error) {
+            socket.emit('error', { message: error.message });
+        }
+
+        socket.on('addProduct', async (productData) => {
             try {
-                const newProduct = productService.createProduct(productData);
-                const products = productService.getAllProducts();
-                io.emit('updateProducts', products);
+                const newProduct = await productService.createProduct(productData);
+                const result = await productService.getAllProducts();
+                io.emit('updateProducts', result.docs);
                 socket.emit('productAdded', newProduct);
             } catch (error) {
                 socket.emit('error', { message: error.message });
             }
         });
 
-        socket.on('deleteProduct', (productId) => {
+        socket.on('deleteProduct', async (productId) => {
             try {
-                const id = parseInt(productId, 10);
-                if (isNaN(id)) {
-                    socket.emit('error', { message: 'Invalid product ID' });
-                    return;
-                }
-
-                const deletedProduct = productService.deleteProduct(id);
-                const products = productService.getAllProducts();
-                io.emit('updateProducts', products);
+                await productService.deleteProduct(productId);
+                const result = await productService.getAllProducts();
+                io.emit('updateProducts', result.docs);
             } catch (error) {
                 socket.emit('error', { message: error.message });
             }

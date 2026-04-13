@@ -1,0 +1,51 @@
+<h1>{{product.title}}</h1>
+
+<div class="product-detail">
+    <div class="product-info">
+        <p><strong>Descripción:</strong> {{product.description}}</p>
+        <p><strong>Precio:</strong> ${{product.price}}</p>
+        <p><strong>Categoría:</strong> {{product.category}}</p>
+        <p><strong>Código:</strong> {{product.code}}</p>
+        <p><strong>Stock:</strong> {{product.stock}}</p>
+        <p><strong>Disponible:</strong> {{#if product.status}}Sí{{else}}No{{/if}}</p>
+    </div>
+
+    <button onclick="addToCart('{{product._id}}')">Agregar al carrito</button>
+    <a href="/products"><button type="button" style="background-color: #6c757d;">Volver a productos</button></a>
+</div>
+
+<style>
+    .product-detail {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .product-info p {
+        margin: 10px 0;
+        font-size: 16px;
+    }
+    .product-detail button {
+        margin-top: 15px;
+        margin-right: 10px;
+    }
+</style>
+
+<script>
+    async function addToCart(productId) {
+        let cartId = localStorage.getItem('cartId');
+        if (!cartId) {
+            const res = await fetch('/api/carts', { method: 'POST' });
+            const data = await res.json();
+            cartId = data.data._id;
+            localStorage.setItem('cartId', cartId);
+        }
+
+        const res = await fetch(`/api/carts/${cartId}/product/${productId}`, { method: 'POST' });
+        if (res.ok) {
+            alert('Producto agregado al carrito');
+        } else {
+            alert('Error al agregar al carrito');
+        }
+    }
+</script>

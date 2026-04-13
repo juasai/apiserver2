@@ -10,7 +10,11 @@ const viewsRoutes = require('./routes/viewsRoutes');
 const app = express();
 
 // Handlebars configuration
-app.engine('handlebars', engine());
+app.engine('handlebars', engine({
+    helpers: {
+        multiply: (a, b) => (a * b).toFixed(2)
+    }
+}));
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 

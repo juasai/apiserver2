@@ -73,7 +73,7 @@
         
         tbody.innerHTML = products.map(product => `
             <tr>
-                <td>${product.id}</td>
+                <td>${product._id}</td>
                 <td>${product.title}</td>
                 <td>${product.description}</td>
                 <td>${product.code}</td>
@@ -81,7 +81,7 @@
                 <td>${product.stock}</td>
                 <td>${product.category}</td>
                 <td>
-                    <button class="delete" onclick="deleteProduct(${product.id})">Eliminar</button>
+                    <button class="delete" onclick="deleteProduct('${product._id}')">Eliminar</button>
                 </td>
             </tr>
         `).join('');

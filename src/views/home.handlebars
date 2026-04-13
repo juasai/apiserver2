@@ -4,31 +4,37 @@
 <div class="info-section">
     <h2>Endpoints Disponibles</h2>
     
-    <h3>📄 Vistas Web</h3>
+    <h3>Vistas Web</h3>
     <ul>
         <li><strong>Inicio:</strong> <a href="/">/</a></li>
-        <li><strong>Productos:</strong> <a href="/home">/home</a></li>
+        <li><strong>Productos:</strong> <a href="/products">/products</a></li>
+        <li><strong>Detalle Producto:</strong> /products/:pid</li>
+        <li><strong>Carrito:</strong> /carts/:cid</li>
         <li><strong>Productos en Tiempo Real:</strong> <a href="/realtimeproducts">/realtimeproducts</a></li>
     </ul>
 
-    <h3>🛒 API - Productos</h3>
+    <h3>API - Productos</h3>
     <ul>
-        <li><strong>GET /api/products</strong> - Listar todos los productos</li>
+        <li><strong>GET /api/products</strong> - Listar productos (con paginación, filtros y ordenamiento)</li>
         <li><strong>GET /api/products/:pid</strong> - Obtener producto por ID</li>
         <li><strong>POST /api/products</strong> - Crear nuevo producto</li>
         <li><strong>PUT /api/products/:pid</strong> - Actualizar producto</li>
         <li><strong>DELETE /api/products/:pid</strong> - Eliminar producto</li>
     </ul>
 
-    <h3>🛒 API - Carritos</h3>
+    <h3>API - Carritos</h3>
     <ul>
         <li><strong>GET /api/carts</strong> - Listar todos los carritos</li>
-        <li><strong>GET /api/carts/:cid</strong> - Obtener carrito por ID</li>
+        <li><strong>GET /api/carts/:cid</strong> - Obtener carrito por ID (con populate)</li>
         <li><strong>POST /api/carts</strong> - Crear nuevo carrito</li>
         <li><strong>POST /api/carts/:cid/product/:pid</strong> - Agregar producto al carrito</li>
+        <li><strong>PUT /api/carts/:cid</strong> - Actualizar todos los productos del carrito</li>
+        <li><strong>PUT /api/carts/:cid/products/:pid</strong> - Actualizar cantidad de un producto</li>
+        <li><strong>DELETE /api/carts/:cid/products/:pid</strong> - Eliminar un producto del carrito</li>
+        <li><strong>DELETE /api/carts/:cid</strong> - Vaciar carrito</li>
     </ul>
 
-    <h3>🔧 Utilitarios</h3>
+    <h3>Utilitarios</h3>
     <ul>
         <li><strong>GET /api/health</strong> - Estado del servidor</li>
     </ul>
@@ -63,37 +69,4 @@
     }
 </style>
 
-{{else}}
-<h1>Lista de Productos</h1>
-
-{{#if products}}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Título</th>
-                <th>Descripción</th>
-                <th>Código</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Categoría</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each products}}
-            <tr>
-                <td>{{this.id}}</td>
-                <td>{{this.title}}</td>
-                <td>{{this.description}}</td>
-                <td>{{this.code}}</td>
-                <td>${{this.price}}</td>
-                <td>{{this.stock}}</td>
-                <td>{{this.category}}</td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
-{{else}}
-    <p>No hay productos disponibles.</p>
-{{/if}}
 {{/if}}
