@@ -1,71 +1,179 @@
 # API Server - Gestor de Productos y Carritos
 
-## Instalación
+Aplicación e-commerce backend con Express.js, MongoDB y WebSockets.
+
+---
+
+## Levantar el proyecto
+
+### Con Docker Compose (recomendado)
+
+Levanta la aplicación y MongoDB con un solo comando:
+
+```bash
+docker compose up --build
+```
+
+Esto inicia:
+- **apiserver-app** en `http://localhost:8080`
+- **apiserver-mongo** (MongoDB) en `localhost:27017`
+
+Para detener:
+
+```bash
+docker compose down
+```
+
+Para detener y eliminar los datos de la base de datos:
+
+```bash
+docker compose down -v
+```
+
+### Sin Docker
+
+Requiere tener MongoDB corriendo localmente o una URI de MongoDB Atlas.
 
 ```bash
 npm install
-npm start
 ```
 
-Servidor: **http://localhost:8080**
+Crear un archivo `.env` basado en `.env.example`:
+
+```
+PORT=8080
+NODE_ENV=development
+MONGO_URI=mongodb://localhost:27017/apiserver
+```
+
+```bash
+npm start        # producción
+npm run dev      # desarrollo (nodemon)
+```
 
 ---
 
-## Endpoints
+## Vistas Web
 
-### Vistas Web
 | Ruta | Descripción |
 |------|-------------|
-| `/` | Inicio - Lista de endpoints |
-| `/home` | Lista de productos |
+| `/` | Inicio - Documentación de endpoints |
+| `/products` | Lista de productos con paginación y filtros |
+| `/products/:pid` | Detalle de un producto con botón agregar al carrito |
+| `/carts/:cid` | Vista del carrito con productos populados |
 | `/realtimeproducts` | Productos en tiempo real (WebSockets) |
 
-### API REST
+---
+
+## API REST - Productos
+
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/products` | Listar productos |
-| GET | `/api/products/:pid` | Producto por ID |
+| GET | `/api/products` | Listar productos (con paginación, filtros y ordenamiento) |
+| GET | `/api/products/:pid` | Obtener producto por ID |
 | POST | `/api/products` | Crear producto |
 | PUT | `/api/products/:pid` | Actualizar producto |
 | DELETE | `/api/products/:pid` | Eliminar producto |
-| GET | `/api/carts` | Listar carritos |
-| GET | `/api/carts/:cid` | Carrito por ID |
-| POST | `/api/carts` | Crear carrito |
-| POST | `/api/carts/:cid/product/:pid` | Agregar producto al carrito |
+
+### Query params de GET /api/products
+
+| Param | Tipo | Default | Descripción |
+|-------|------|---------|-------------|
+| `limit` | number | 10 | Cantidad de productos por página |
+| `page` | number | 1 | Número de página |
+| `sort` | string | - | Ordenar por precio: `asc` o `desc` |
+| `query` | string | - | Filtrar por categoría (ej: `Electronics`) o disponibilidad (`true`/`false`) |
+
+### Formato de respuesta
+
+```json
+{
+  "status": "success",
+  "payload": [],
+  "totalPages": 1,
+  "prevPage": null,
+  "nextPage": 2,
+  "page": 1,
+  "hasPrevPage": false,
+  "hasNextPage": true,
+  "prevLink": null,
+  "nextLink": "http://localhost:8080/api/products?page=2&limit=10"
+}
+```
+
+### Estructura del producto
+
+```json
+{
+  "title": "Laptop",
+  "description": "Laptop gaming",
+  "price": 1500,
+  "code": "LAP001",
+  "stock": 10,
+  "category": "Electronics",
+  "status": true,
+  "thumbnails": []
+}
+```
+
+Campos requeridos: `title`, `description`, `price`, `code` (único), `stock`, `category`.
 
 ---
 
-## Cómo Probar
+## API REST - Carritos
 
-### 1. Vista Web (Home)
-```
-http://localhost:8080/home
-```
-Lista todos los productos.
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/carts` | Listar todos los carritos |
+| GET | `/api/carts/:cid` | Obtener carrito por ID (con populate de productos) |
+| POST | `/api/carts` | Crear carrito vacío |
+| POST | `/api/carts/:cid/product/:pid` | Agregar producto al carrito (incrementa cantidad si ya existe) |
+| PUT | `/api/carts/:cid` | Actualizar todos los productos del carrito |
+| PUT | `/api/carts/:cid/products/:pid` | Actualizar cantidad de un producto en el carrito |
+| DELETE | `/api/carts/:cid/products/:pid` | Eliminar un producto del carrito |
+| DELETE | `/api/carts/:cid` | Vaciar el carrito (elimina todos los productos, no el carrito) |
 
-### 2. Productos en Tiempo Real
-```
-http://localhost:8080/realtimeproducts
-```
-- Formulario para agregar productos (envía por WebSocket)
-- Lista que se actualiza automáticamente
-- Botón eliminar por producto
+### Ejemplos
 
-### 3. API REST
 ```bash
-# Crear producto
-curl -X POST http://localhost:8080/api/products \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Producto","description":"Descripción","price":100,"code":"PROD1","stock":10,"category":"Test"}'
+# Crear carrito
+curl -X POST http://localhost:8080/api/carts
 
-# Listar productos
-curl http://localhost:8080/api/products
+# Agregar producto al carrito
+curl -X POST http://localhost:8080/api/carts/{cartId}/product/{productId}
+
+# Actualizar cantidad de un producto
+curl -X PUT http://localhost:8080/api/carts/{cartId}/products/{productId} \
+  -H "Content-Type: application/json" \
+  -d '{"quantity": 5}'
+
+# Reemplazar todos los productos del carrito
+curl -X PUT http://localhost:8080/api/carts/{cartId} \
+  -H "Content-Type: application/json" \
+  -d '{"products": [{"product": "{productId}", "quantity": 2}]}'
+
+# Eliminar un producto del carrito
+curl -X DELETE http://localhost:8080/api/carts/{cartId}/products/{productId}
+
+# Vaciar carrito
+curl -X DELETE http://localhost:8080/api/carts/{cartId}
 ```
+
+---
+
+## Utilitarios
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/health` | Estado del servidor |
 
 ---
 
 ## Tecnologías
-- Express.js
+
+- Express.js 5
+- MongoDB + Mongoose
+- mongoose-paginate-v2
 - Socket.io (WebSockets)
 - Handlebars (Plantillas)
-- Persistencia en JSON
+- Docker + Docker Compose
