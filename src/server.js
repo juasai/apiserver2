@@ -1,5 +1,6 @@
 const app = require('./app');
 const config = require('./config/config');
+const connectDB = require('./config/database');
 const http = require('http');
 const { Server } = require('socket.io');
 const setupSocketHandlers = require('./socketHandler');
@@ -13,10 +14,11 @@ app.set('io', io);
 
 setupSocketHandlers(io);
 
+connectDB().then(() => {
 server.listen(PORT, () => {
     console.log(`
 ========================================
-🚀 Server is running!
+Server is running!
 ========================================
 Environment: ${config.nodeEnv}
 Port: ${PORT}
@@ -24,6 +26,7 @@ URL: http://localhost:${PORT}
 API: http://localhost:${PORT}/api
 ========================================
     `);
+});
 });
 
 // Graceful shutdown
